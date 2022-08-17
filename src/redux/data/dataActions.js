@@ -25,19 +25,19 @@ export const fetchData = (account) => {
   return async (dispatch) => {
     dispatch(fetchDataRequest());
     try {
-      let allLips = await store
+      let allClubs = await store
         .getState()
-        .blockchain.lipToken.methods.getLips()
+        .blockchain.footballVerseClub.methods.getClubs()
         .call();
-      let allOwnerLips = await store
+      let allOwnerClubs = await store
         .getState()
-        .blockchain.lipToken.methods.getOwnerLips(account)
+        .blockchain.footballVerseClub.methods.getOwnerClubs(account)
         .call();
 
       dispatch(
         fetchDataSuccess({
-          allLips,
-          allOwnerLips,
+          allClubs,
+          allOwnerClubs,
         })
       );
     } catch (err) {

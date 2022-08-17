@@ -1,7 +1,7 @@
 const initialState = {
     loading: false,
-    allLips: [],
-    allOwnerLips: [],
+    allClubs: [],
+    allOwnerClubs: [],
     error: false,
     errorMsg: "",
   };
@@ -17,8 +17,8 @@ const initialState = {
         return {
           ...initialState,
           loading: false,
-          allLips: action.payload.allLips,
-          allOwnerLips: action.payload.allOwnerLips,
+          allClubs: action.payload.allClubs,
+          allOwnerClubs: action.payload.allOwnerClubs,
         };
       case "CHECK_DATA_FAILED":
         return {
