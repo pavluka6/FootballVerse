@@ -4,6 +4,9 @@ pragma solidity >=0.7.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Base64.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Counters.sol";
+
 
 /**
  * @title FootballVerseClub
@@ -14,9 +17,12 @@ interface PlayerInterface {
   function createPlayer(address _to, uint256 clubId) external;
 }
 
-contract FootballVerseClub is ERC721, Ownable {
-    uint256 index;
+contract FootballVerseClub is ERC721, Ownable {   
+    using Counters for Counters.Counter;
+    Counters.Counter private _tokenIds;
     address playerContractAddress;
+    uint8 upgradeAcademyFee = 1 ether;
+    uint8 upgradeStadiumFee = 1 ether;
 
     struct Club {
         string name;
@@ -37,13 +43,14 @@ contract FootballVerseClub is ERC721, Ownable {
     constructor(string memory tokenName, string memory tokenSymbol) ERC721(tokenName, tokenSymbol) {}
 
     function _createClub(string memory _name) public payable {
+        clubId = _tokenIds.current();
         require(msg.value >= fee, "Value sent is lower than the price");
         Club memory newClub = Club(_name, 1, 1, false);
         clubs.push(newClub);
-        _safeMint(msg.sender, index);
-        index++;
+        _safeMint(msg.sender, clubId);
+        _tokenIds.increment();
 
-        emit NewClub(msg.sender, index-1);
+        emit NewClub(msg.sender, clubId);
     }
 
     function changeFee(uint256 newFee) external onlyOwner() {
@@ -84,13 +91,21 @@ contract FootballVerseClub is ERC721, Ownable {
     }
 
     function mintFirstPlayers(uint256 clubId) public {
-        require(msg.sender == ownerOf(clubId));
-        require(!clubs[clubId].initialized);
+        require(msg.sender == ownerOf(clubId), "Caller is not the owner of the clubId");
+        require(!clubs[clubId].initialized, "First batch of players already minted");
         for (uint i = 0; i < 16; i++) { 
             playerContract.createPlayer(msg.sender, clubId);
         }
 
         clubs[clubId].initialized = true;
         emit FirstPlayersMinted(msg.sender, clubId);
+    }
+
+    function _upgradeStadiumFee(uint8 _newfee) external onlyOwner {
+        upgradeStadiumFee = _newfee;
+    }
+
+    function _upgradeAcademyFee(uint8 _newfee) external onlyOwner {
+        upgradeAcademyFee = _newfee;
     }
 }
